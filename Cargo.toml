@@ -9,6 +9,7 @@ opt-level = 3
 
 [dependencies]
 actix-web = "4.10.2"
+dotenvy = "0.15.7"
 serde = "1.0.219"
 sqlx = { version = "0.8", features = [
     "runtime-tokio",
@@ -16,3 +17,4 @@ sqlx = { version = "0.8", features = [
     "mysql",
     "chrono",
 ] }
+tokio = { version = "1.44.0", features = ["full"] }
