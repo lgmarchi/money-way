@@ -8,7 +8,7 @@ edition = "2024"
 opt-level = 3
 
 [dependencies]
-actix-web = "4"
+actix-web = "4.10.2"
 sqlx = { version = "0.8", features = [
     "runtime-tokio",
     "tls-native-tls",
