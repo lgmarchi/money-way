@@ -1,0 +1,17 @@
+[package]
+name = "money-way"
+version = "0.1.0"
+edition = "2024"
+
+# Improve compile times when using SQLx
+[profile.dev.package.sqlx-macros]
+opt-level = 3
+
+[dependencies]
+actix-web = "4"
+sqlx = { version = "0.8", features = [
+    "runtime-tokio",
+    "tls-native-tls",
+    "mysql",
+    "chrono",
+] }
