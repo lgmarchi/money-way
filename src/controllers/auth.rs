@@ -7,8 +7,13 @@ use actix_web::{
 use crate::{
     AppState,
     db,
-    domain::user::SignUpRequest,
+    domain::user::{
+        self,
+        SignInRequest,
+        SignUpRequest,
+    },
     responses::api_response::ApiResponse,
+    utils::hash::verify_password,
 };
 
 #[post("/auth/sign-up")]
@@ -35,6 +40,27 @@ pub async fn sign_up(
 }
 
 #[post("/auth/sign-in")]
-pub async fn sign_in() -> impl Responder {
+pub async fn sign_in(
+    state: web::Data<AppState>,
+    data: web::Json<SignInRequest>,
+) -> impl Responder {
+    let db_pool = state.db.lock().await;
+
+    let Some(user) =
+        db::user_repository::get_by_email(&db_pool, &data.email).await
+    else {
+        return ApiResponse::<()>::error(
+            actix_web::http::StatusCode::UNAUTHORIZED,
+            "Invalid email or password",
+        );
+    };
+
+    if !verify_password(&data.password, &user.password) {
+        return ApiResponse::<()>::error(
+            actix_web::http::StatusCode::UNAUTHORIZED,
+            "Invalid email or password",
+        );
+    }
+
     "Sign Up"
 }
