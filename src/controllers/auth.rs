@@ -1,5 +1,4 @@
 use actix_web::{
-    HttpResponse,
     Responder,
     post,
     web,
@@ -9,6 +8,7 @@ use crate::{
     AppState,
     db,
     domain::user::SignUpRequest,
+    responses::api_response::ApiResponse,
 };
 
 #[post("/auth/sign-up")]
@@ -19,13 +19,19 @@ pub async fn sign_up(
     // Lock the mutex to get the database pool
     let db_pool = state.db.lock().await;
 
-    if db::user::has_with_email(&db_pool, &data.email).await {
-        return "Email already exists".to_string();
+    if db::user_repository::has_with_email(&db_pool, &data.email).await {
+        return ApiResponse::<()>::error(
+            actix_web::http::StatusCode::UNPROCESSABLE_ENTITY,
+            "Email already in use",
+        );
     }
 
-    db::user::create(&db_pool, &data).await;
+    db::user_repository::create(&db_pool, &data).await;
 
-    format!("Sign Up Succesful: {:?}", data)
+    ApiResponse::<web::Json<SignUpRequest>>::success(
+        "Account created successfully",
+        Some(data),
+    )
 }
 
 #[post("/auth/sign-in")]
