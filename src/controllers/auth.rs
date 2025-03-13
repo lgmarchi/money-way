@@ -6,7 +6,10 @@ use actix_web::{
 };
 use serde::Deserialize;
 
-use crate::AppState;
+use crate::{
+    AppState,
+    db,
+};
 
 #[derive(Deserialize, Debug)]
 struct SignUpRequest {
@@ -24,21 +27,8 @@ pub async fn sign_up(
     // Lock the mutex to get the database pool
     let db_pool = state.db.lock().await;
 
-    // Get a connection from the pool
-    match sqlx::query!(
-        "INSERT INTO users (email, password) VALUES (?, ?)",
-        data.email,
-        data.password
-    )
-    .execute(&*db_pool) // Deref to access Pool<MySql>
-    .await
-    {
-        Ok(_) => {
-            HttpResponse::Ok().body(format!("User {} signed up!", data.email));
-        }
-        Err(e) => {
-            HttpResponse::InternalServerError().body(format!("Error: {}", e));
-        }
+    if db::user::has_with_email(&db_pool, &data.email).await {
+        return "Email already exists".to_string();
     }
 
     format!("Sign Up: {:?}", data)
