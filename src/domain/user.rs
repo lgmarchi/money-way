@@ -55,10 +55,6 @@ impl Claims {
             .as_secs()
             + 4 * 60 * 60;
 
-        Self {
-            sub,
-            role,
-            exp: exp.unwrap_or_else(|| four_hours_ahead_since_epoch),
-        }
+        Self { sub, role, exp: exp.unwrap_or(four_hours_ahead_since_epoch) }
     }
 }
