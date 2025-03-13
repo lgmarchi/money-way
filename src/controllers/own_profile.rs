@@ -6,12 +6,13 @@ use actix_web::{
     post,
 };
 
+use crate::utils::{
+    self,
+};
+
 #[get("/own_profile")]
 pub async fn get_own_profile(req: HttpRequest) -> impl Responder {
-    let extension: std::cell::Ref<'_, actix_web::dev::Extensions> =
-        req.extensions();
-
-    let user_id = extension.get::<u64>().unwrap();
+    let user_id = utils::req_user_id::get_user_id(&req);
 
     format!("Profile user id: {:#?}", user_id)
 }
