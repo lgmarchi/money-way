@@ -19,9 +19,7 @@ use serde_json::json;
 
 use crate::{
     AppState,
-    controllers::auth,
     domain::user::Claims,
-    responses::api_response::ApiResponse,
 };
 
 pub async fn verify_jwt(
@@ -55,7 +53,7 @@ pub async fn verify_jwt(
     let token = auth_str.strip_prefix("Bearer ").unwrap();
 
     let state = req.app_data::<web::Data<AppState>>().unwrap();
-    let key = DecodingKey::from_secret(&state.jwt_secret.as_bytes());
+    let key = DecodingKey::from_secret(state.jwt_secret.as_bytes());
 
     match decode::<Claims>(token, &key, &Validation::default()) {
         Ok(token_data) => {
@@ -63,12 +61,10 @@ pub async fn verify_jwt(
 
             next.call(req).await
         }
-        Err(_) => {
-            return Err(ErrorUnauthorized(json!({
-                "status": "error",
-                "message": "Invalid Token",
+        Err(_) => Err(ErrorUnauthorized(json!({
+            "status": "error",
+            "message": "Invalid Token",
 
-            })));
-        }
+        }))),
     }
 }
