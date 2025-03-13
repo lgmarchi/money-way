@@ -7,11 +7,13 @@ use actix_web::{
 mod controllers;
 mod db;
 mod domain;
+mod middleware;
 mod responses;
 mod utils;
 
 struct AppState {
     db: tokio::sync::Mutex<sqlx::MySqlPool>,
+    jwt_secret: String,
 }
 
 const DATABASE_URL: &str = "DATABASE_URL";
@@ -30,8 +32,10 @@ async fn main() -> std::io::Result<()> {
         }
     };
 
-    let state: web::Data<AppState> =
-        web::Data::new(AppState { db: tokio::sync::Mutex::new(db_connection) });
+    let state: web::Data<AppState> = web::Data::new(AppState {
+        db: tokio::sync::Mutex::new(db_connection),
+        jwt_secret: std::env::var("JWT_SECRET").unwrap(),
+    });
 
     HttpServer::new(move || {
         App::new()
