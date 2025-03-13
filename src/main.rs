@@ -8,6 +8,7 @@ mod controllers;
 mod db;
 mod domain;
 mod responses;
+mod utils;
 
 struct AppState {
     db: tokio::sync::Mutex<sqlx::MySqlPool>,
