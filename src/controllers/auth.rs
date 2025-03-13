@@ -4,20 +4,12 @@ use actix_web::{
     post,
     web,
 };
-use serde::Deserialize;
 
 use crate::{
     AppState,
     db,
+    domain::user::SignUpRequest,
 };
-
-#[derive(Deserialize, Debug)]
-struct SignUpRequest {
-    email: String,
-    password: String,
-    first_name: String,
-    last_name: String,
-}
 
 #[post("/auth/sign-up")]
 pub async fn sign_up(
@@ -31,7 +23,9 @@ pub async fn sign_up(
         return "Email already exists".to_string();
     }
 
-    format!("Sign Up: {:?}", data)
+    db::user::create(&db_pool, &data).await;
+
+    format!("Sign Up Succesful: {:?}", data)
 }
 
 #[post("/auth/sign-in")]

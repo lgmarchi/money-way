@@ -6,6 +6,7 @@ use actix_web::{
 
 mod controllers;
 mod db;
+mod domain;
 
 struct AppState {
     db: tokio::sync::Mutex<sqlx::MySqlPool>,
