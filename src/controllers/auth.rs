@@ -1,8 +1,12 @@
+use std::collections::HashMap;
+
 use actix_web::{
     Responder,
     post,
     web,
 };
+use jsonwebtoken::EncodingKey;
+use serde_json::json;
 
 use crate::{
     AppState,
@@ -35,6 +39,7 @@ pub async fn sign_up(
 
     ApiResponse::<web::Json<SignUpRequest>>::success(
         "Account created successfully",
+        HashMap::new(),
         Some(data),
     )
 }
@@ -62,5 +67,21 @@ pub async fn sign_in(
         );
     }
 
-    "Sign Up"
+    let claims = user::Claims::new(user.id, "user".to_string(), None);
+
+    let token = jsonwebtoken::encode(
+        &jsonwebtoken::Header::default(),
+        &claims,
+        &EncodingKey::from_secret(state.jwt_secret.as_bytes()),
+    )
+    .unwrap();
+
+    let mut extra_fields = HashMap::new();
+    extra_fields.insert("token".to_string(), json!(token));
+
+    ApiResponse::<String>::success(
+        "Token generated successfully",
+        extra_fields,
+        None,
+    )
 }
