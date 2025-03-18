@@ -60,3 +60,9 @@ impl Claims {
         Self { sub, role, exp: exp.unwrap_or(four_hours_ahead_since_epoch) }
     }
 }
+
+#[derive(Deserialize, Debug)]
+pub struct UpdateProfileRequest {
+    pub first_name: String,
+    pub last_name: String,
+}
