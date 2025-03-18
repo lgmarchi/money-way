@@ -1,2 +1,2 @@
 pub mod hash;
-pub mod req_user_id;
+pub mod user_helpers;

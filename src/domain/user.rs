@@ -1,18 +1,12 @@
 use std::time::SystemTime;
 
-use actix_web::rt::System;
 use serde::{
     Deserialize,
     Serialize,
 };
-use sqlx::{
-    FromRow,
-    types::chrono::{
-        self,
-        DateTime,
-        NaiveDateTime,
-        Utc,
-    },
+use sqlx::types::chrono::{
+    DateTime,
+    Utc,
 };
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -29,9 +23,11 @@ pub struct SignInRequest {
     pub password: String,
 }
 
+#[derive(Serialize)]
 pub struct User {
     pub id: u64,
     pub email: String,
+    #[serde(skip_serializing)]
     pub password: String,
     pub first_name: String,
     pub last_name: String,
@@ -57,4 +53,10 @@ impl Claims {
 
         Self { sub, role, exp: exp.unwrap_or(four_hours_ahead_since_epoch) }
     }
+}
+
+#[derive(Deserialize, Debug)]
+pub struct UpdateProfileRequest {
+    pub first_name: String,
+    pub last_name: String,
 }

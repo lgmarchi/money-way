@@ -1,6 +1,7 @@
 use crate::{
     domain::user::{
         SignUpRequest,
+        UpdateProfileRequest,
         User,
     },
     utils::hash::hash_password,
@@ -35,4 +36,28 @@ pub async fn get_by_email(db: &sqlx::MySqlPool, email: &str) -> Option<User> {
         .fetch_one(db)
         .await
         .ok()
+}
+
+pub async fn get_by_id(db: &sqlx::MySqlPool, id: &str) -> Option<User> {
+    sqlx::query_as!(User, "SELECT * FROM users WHERE id = ?", id)
+        .fetch_one(db)
+        .await
+        .ok()
+}
+
+pub async fn update_by_id(
+    db: &sqlx::MySqlPool,
+    id: &str,
+    user_profile_request: &UpdateProfileRequest,
+) -> sqlx::Result<()> {
+    sqlx::query!(
+        "UPDATE users SET first_name = ?, last_name = ? WHERE id = ?",
+        user_profile_request.first_name,
+        user_profile_request.last_name,
+        id
+    )
+    .execute(db)
+    .await?;
+
+    Ok(())
 }
