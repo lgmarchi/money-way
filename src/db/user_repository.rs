@@ -1,3 +1,5 @@
+use chrono::NaiveDateTime;
+
 use crate::{
     domain::user::{
         SignUpRequest,
@@ -32,6 +34,13 @@ pub async fn create(
 
 pub async fn get_by_email(db: &sqlx::MySqlPool, email: &str) -> Option<User> {
     sqlx::query_as!(User, "SELECT * FROM users WHERE email = ?", email)
+        .fetch_one(db)
+        .await
+        .ok()
+}
+
+pub async fn get_by_id(db: &sqlx::MySqlPool, id: &str) -> Option<User> {
+    sqlx::query_as!(User, "SELECT * FROM users WHERE id = ?", id)
         .fetch_one(db)
         .await
         .ok()

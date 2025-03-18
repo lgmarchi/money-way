@@ -29,9 +29,11 @@ pub struct SignInRequest {
     pub password: String,
 }
 
+#[derive(Serialize)]
 pub struct User {
     pub id: u64,
     pub email: String,
+    #[serde(skip_serializing)]
     pub password: String,
     pub first_name: String,
     pub last_name: String,
