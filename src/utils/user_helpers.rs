@@ -19,7 +19,7 @@ pub async fn get_authenticated_user(
     db: &sqlx::MySqlPool,
     req: &HttpRequest,
 ) -> User {
-    db::user_repository::get_by_id(&db, get_user_id(req).to_string().as_str())
+    db::user_repository::get_by_id(db, get_user_id(req).to_string().as_str())
         .await
         .unwrap()
 }

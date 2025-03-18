@@ -11,7 +11,7 @@ use crate::{
     AppState,
     db,
     domain::user::UpdateProfileRequest,
-    utils::req_user_id::get_authenticated_user,
+    utils::user_helpers::get_authenticated_user,
 };
 
 #[get("/own_profile")]

@@ -1,18 +1,12 @@
 use std::time::SystemTime;
 
-use actix_web::rt::System;
 use serde::{
     Deserialize,
     Serialize,
 };
-use sqlx::{
-    FromRow,
-    types::chrono::{
-        self,
-        DateTime,
-        NaiveDateTime,
-        Utc,
-    },
+use sqlx::types::chrono::{
+    DateTime,
+    Utc,
 };
 
 #[derive(Serialize, Deserialize, Debug)]
