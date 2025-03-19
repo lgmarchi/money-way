@@ -98,6 +98,30 @@ pub async fn update(
 }
 
 #[delete("/categories/{id}")]
-pub async fn destroy() -> impl Responder {
-    "Categories: Destroy"
+pub async fn destroy(
+    state: web::Data<AppState>,
+    id: web::Path<u64>,
+    req: HttpRequest,
+) -> impl Responder {
+    let user_id = utils::user_helpers::get_user_id(&req);
+    let db = state.db.lock().await;
+
+    let categories_repository = CategoryRepository::new(db.clone());
+    let category = categories_repository.get(id.into_inner()).await;
+
+    if category.user_id != user_id {
+        return HttpResponse::Unauthorized().json(json!(
+        {
+            "status": "error",
+            "message": "Unauthorized"
+        }));
+    }
+
+    categories_repository.delete(category.id).await;
+
+    HttpResponse::Ok().json(json!({
+        "status": "success",
+        "message": "Category deleted successfully.",
+        "category_deleted": category
+    }))
 }

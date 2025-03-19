@@ -7,7 +7,7 @@ use serde::{
     Serialize,
 };
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Category {
     pub id: u64,
     pub user_id: u64,

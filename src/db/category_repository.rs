@@ -57,4 +57,11 @@ impl CategoryRepository {
         .await
         .unwrap();
     }
+
+    pub async fn delete(&self, id: u64) {
+        sqlx::query!("DELETE FROM categories  WHERE id = ?", id)
+            .execute(&self.db)
+            .await
+            .unwrap();
+    }
 }
