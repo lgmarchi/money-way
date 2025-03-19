@@ -5,7 +5,9 @@ use actix_web::{
         Logger,
         from_fn,
     },
-    web,
+    web::{
+        self,
+    },
 };
 use env_logger::Env;
 
@@ -55,7 +57,12 @@ async fn main() -> std::io::Result<()> {
                 web::scope("/api")
                     .wrap(from_fn(middleware::auth::verify_jwt))
                     .service(controllers::own_profile::get_own_profile)
-                    .service(controllers::own_profile::update_profile),
+                    .service(controllers::own_profile::update_profile)
+                    .service(controllers::categories::index)
+                    .service(controllers::categories::show)
+                    .service(controllers::categories::update)
+                    .service(controllers::categories::create)
+                    .service(controllers::categories::destroy),
             )
     })
     .bind(("127.0.0.1", 8080))?
