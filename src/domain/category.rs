@@ -17,3 +17,9 @@ pub struct Category {
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CreateCategoryRequest {
+    pub name: String,
+    pub description: Option<String>,
+}

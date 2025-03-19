@@ -12,6 +12,7 @@ use actix_web::{
 use crate::{
     AppState,
     db::category_repository::CategoryRepository,
+    domain::category::CreateCategoryRequest,
     utils,
 };
 
@@ -28,8 +29,17 @@ pub async fn index(
     HttpResponse::Ok().json(categories)
 }
 #[post("/categories")]
-pub async fn create() -> impl Responder {
-    "Categories: Create"
+pub async fn create(
+    state: web::Data<AppState>,
+    data: web::Json<CreateCategoryRequest>,
+    req: HttpRequest,
+) -> impl Responder {
+    let user_id = utils::user_helpers::get_user_id(&req);
+    let db = state.db.lock().await;
+    let categories_repository = CategoryRepository::new(db.clone());
+    let category = categories_repository.create(&data, user_id).await;
+
+    HttpResponse::Ok().json(category)
 }
 
 #[get("/categories/{id}")]
