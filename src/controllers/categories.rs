@@ -8,6 +8,7 @@ use actix_web::{
     put,
     web,
 };
+use serde_json::json;
 
 use crate::{
     AppState,
@@ -43,8 +44,26 @@ pub async fn create(
 }
 
 #[get("/categories/{id}")]
-pub async fn show() -> impl Responder {
-    "Categories: Show"
+pub async fn show(
+    state: web::Data<AppState>,
+    id: web::Path<u64>,
+    req: HttpRequest,
+) -> impl Responder {
+    let user_id = utils::user_helpers::get_user_id(&req);
+    let db = state.db.lock().await;
+
+    let categories_repository = CategoryRepository::new(db.clone());
+    let category = categories_repository.get(id.into_inner()).await;
+
+    if category.user_id != user_id {
+        return HttpResponse::Unauthorized().json(json!(
+        {
+            "status": "error",
+            "message": "Unauthorized"
+        }));
+    }
+
+    HttpResponse::Ok().json(category)
 }
 
 #[put("/categories/{id}")]
