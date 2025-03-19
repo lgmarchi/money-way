@@ -13,7 +13,10 @@ use serde_json::json;
 use crate::{
     AppState,
     db::category_repository::CategoryRepository,
-    domain::category::CreateCategoryRequest,
+    domain::category::{
+        CreateCategoryRequest,
+        UpdateCategoryRequest,
+    },
     utils,
 };
 
@@ -67,8 +70,31 @@ pub async fn show(
 }
 
 #[put("/categories/{id}")]
-pub async fn update() -> impl Responder {
-    "Categories: Update"
+pub async fn update(
+    state: web::Data<AppState>,
+    id: web::Path<u64>,
+    data: web::Json<UpdateCategoryRequest>,
+    req: HttpRequest,
+) -> impl Responder {
+    let user_id = utils::user_helpers::get_user_id(&req);
+    let db = state.db.lock().await;
+
+    let categories_repository = CategoryRepository::new(db.clone());
+    let category_id = *id;
+    let category = categories_repository.get(id.into_inner()).await;
+
+    if category.user_id != user_id {
+        return HttpResponse::Unauthorized().json(json!(
+        {
+            "status": "error",
+            "message": "Unauthorized"
+        }));
+    }
+
+    categories_repository.update(&data, category_id).await;
+    let category_updated = categories_repository.get(category.id).await;
+
+    HttpResponse::Ok().json(category_updated)
 }
 
 #[delete("/categories/{id}")]

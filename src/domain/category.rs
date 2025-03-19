@@ -23,3 +23,9 @@ pub struct CreateCategoryRequest {
     pub name: String,
     pub description: Option<String>,
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UpdateCategoryRequest {
+    pub name: String,
+    pub description: Option<String>,
+}

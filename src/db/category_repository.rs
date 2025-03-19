@@ -1,6 +1,7 @@
 use crate::domain::category::{
     Category,
     CreateCategoryRequest,
+    UpdateCategoryRequest,
 };
 
 pub struct CategoryRepository {
@@ -43,5 +44,17 @@ impl CategoryRepository {
         ).execute(&self.db).await.unwrap();
 
         self.get(query_result.last_insert_id()).await
+    }
+
+    pub async fn update(&self, category: &UpdateCategoryRequest, id: u64) {
+        sqlx::query!(
+            "UPDATE categories SET name = ?, description = ? WHERE id = ?",
+            category.name,
+            category.description,
+            id
+        )
+        .execute(&self.db)
+        .await
+        .unwrap();
     }
 }
