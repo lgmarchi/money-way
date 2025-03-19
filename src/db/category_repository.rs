@@ -24,18 +24,18 @@ impl CategoryRepository {
         .unwrap()
     }
 
-    pub async fn get(&self, id: u64) -> Category {
+    pub async fn get(&self, id: u64) -> Option<Category> {
         sqlx::query_as!(Category, "SELECT * FROM categories WHERE id = ?", id)
             .fetch_one(&self.db)
             .await
-            .unwrap()
+            .ok()
     }
 
     pub async fn create(
         &self,
         data: &CreateCategoryRequest,
         user_id: u64,
-    ) -> Category {
+    ) -> Option<Category> {
         let query_result = sqlx::query!(
             "INSERT INTO categories (`user_id`, `name`, `description`) VALUES (?, ?, ?)",
             user_id,

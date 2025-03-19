@@ -56,7 +56,15 @@ pub async fn show(
     let db = state.db.lock().await;
 
     let categories_repository = CategoryRepository::new(db.clone());
-    let category = categories_repository.get(id.into_inner()).await;
+    let Some(category) = categories_repository.get(id.into_inner()).await
+    else {
+        return HttpResponse::NotFound().json(json!(
+        {
+            "status": "error",
+            "message": "Not found"
+        }
+        ));
+    };
 
     if category.user_id != user_id {
         return HttpResponse::Unauthorized().json(json!(
@@ -81,7 +89,15 @@ pub async fn update(
 
     let categories_repository = CategoryRepository::new(db.clone());
     let category_id = *id;
-    let category = categories_repository.get(id.into_inner()).await;
+    let Some(category) = categories_repository.get(id.into_inner()).await
+    else {
+        return HttpResponse::NotFound().json(json!(
+        {
+            "status": "error",
+            "message": "Not found"
+        }
+        ));
+    };
 
     if category.user_id != user_id {
         return HttpResponse::Unauthorized().json(json!(
@@ -107,7 +123,15 @@ pub async fn destroy(
     let db = state.db.lock().await;
 
     let categories_repository = CategoryRepository::new(db.clone());
-    let category = categories_repository.get(id.into_inner()).await;
+    let Some(category) = categories_repository.get(id.into_inner()).await
+    else {
+        return HttpResponse::NotFound().json(json!(
+        {
+            "status": "error",
+            "message": "Not found"
+        }
+        ));
+    };
 
     if category.user_id != user_id {
         return HttpResponse::Unauthorized().json(json!(
