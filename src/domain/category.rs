@@ -11,8 +11,11 @@ use serde::{
 pub struct Category {
     pub id: u64,
     pub user_id: u64,
+    #[serde(trim_whitespace)]
     pub name: String,
+    #[serde(default)]
     pub description: Option<String>,
+    #[serde(default)]
     pub balance: u64,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -20,7 +23,9 @@ pub struct Category {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CreateCategoryRequest {
+    #[serde(trim_whitespace)]
     pub name: String,
+    #[serde(default)]
     pub description: Option<String>,
 }
 
