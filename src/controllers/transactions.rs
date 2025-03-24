@@ -13,6 +13,7 @@ use serde_json::json;
 use crate::{
     AppState,
     db::{
+        self,
         category_repository::CategoryRepository,
         transaction_repository::{
             self,
@@ -79,8 +80,8 @@ pub async fn create(
     data: web::Json<CreateTransactionRequest>,
     req: HttpRequest,
 ) -> impl Responder {
-    let user_id = utils::user_helpers::get_user_id(&req);
     let db = state.db.lock().await;
+    let user = utils::user_helpers::get_authenticated_user(&db, &req).await;
 
     let categories_repository = CategoryRepository::new(db.clone());
     let Some(category) = categories_repository.get(data.category_id).await
@@ -93,20 +94,44 @@ pub async fn create(
         ));
     };
 
-    if category.user_id != user_id {
-        return HttpResponse::Unauthorized().json(json!(
+    if category.user_id != user.id {
+        return HttpResponse::Forbidden().json(json!(
         {
             "status": "error",
             "message": "You are not authorized to create transactions for this category"
         }));
     }
 
+    if data.r#type == "DEBIT"
+        && (user.balance < data.amount || category.balance < data.amount)
+    {
+        return HttpResponse::BadRequest().json(json!(
+        {
+            "status": "error",
+            "message": "Insufficient balance"
+        }
+        ));
+    }
+
     let transaction_repo = TransactionRepository::new(db.clone());
-    let transaction_option = transaction_repo.create(&data, user_id).await;
+    let transaction_option = transaction_repo.create(&data, user.id).await;
+
+    let (user_balance, category_balance) = if data.r#type == "DEBIT" {
+        (user.balance - data.amount, category.balance - data.amount)
+    } else {
+        (user.balance + data.amount, category.balance + data.amount)
+    };
+
+    let _ =
+        db::user_repository::update_balance(&db, user.id, user_balance).await;
+
+    let _ = categories_repository
+        .update_balance(category.id, category_balance)
+        .await;
 
     match transaction_option {
-        Some(transaction) => HttpResponse::Ok().json(transaction),
-        None => HttpResponse::Unauthorized().json(json!(
+        Some(transaction) => HttpResponse::Created().json(transaction),
+        None => HttpResponse::BadRequest().json(json!(
         {
             "status": "error",
             "message": "Transaction not created"

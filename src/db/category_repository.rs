@@ -64,4 +64,20 @@ impl CategoryRepository {
             .await
             .unwrap();
     }
+
+    pub async fn update_balance(
+        &self,
+        id: u64,
+        balance: u64,
+    ) -> sqlx::Result<()> {
+        sqlx::query!(
+            "UPDATE categories SET balance = ? WHERE id = ?",
+            balance,
+            id
+        )
+        .execute(&self.db)
+        .await?;
+
+        Ok(())
+    }
 }
