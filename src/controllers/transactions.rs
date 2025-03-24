@@ -182,6 +182,73 @@ pub async fn update(
 }
 
 #[delete("/transactions/{id}")]
-pub async fn destroy() -> impl Responder {
-    "Transactions: Destroy"
+pub async fn destroy(
+    state: web::Data<AppState>,
+    id: web::Path<u64>,
+    req: HttpRequest,
+) -> impl Responder {
+    let user_id = utils::user_helpers::get_user_id(&req);
+    let db = state.db.lock().await;
+    let user = utils::user_helpers::get_authenticated_user(&db, &req).await;
+
+    let transaction_repo = TransactionRepository::new(db.clone());
+    let Some(transaction) = transaction_repo.get(id.into_inner()).await else {
+        return HttpResponse::NotFound().json(json!(
+        {
+            "status": "error",
+            "message": "Not found"
+        }
+        ));
+    };
+
+    if transaction.user_id != user_id {
+        return HttpResponse::Forbidden().json(json!(
+        {
+            "status": "error",
+            "message": "Unauthorized"
+        }));
+    };
+
+    let categories_repository = CategoryRepository::new(db.clone());
+    let category =
+        categories_repository.get(transaction.category_id).await.unwrap();
+
+    if transaction.r#type == "CREDIT"
+        && (transaction.amount > user.balance
+            || transaction.amount > category.balance)
+    {
+        return HttpResponse::BadRequest().json(json!(
+        {
+            "status": "error",
+            "message": "Insufficient balance"
+        }
+        ));
+    }
+
+    transaction_repo.delete(transaction.id).await;
+
+    let (user_balance, category_balance) = if transaction.r#type == "CREDIT" {
+        (
+            user.balance - transaction.amount,
+            category.balance - transaction.amount,
+        )
+    } else {
+        (
+            user.balance + transaction.amount,
+            category.balance + transaction.amount,
+        )
+    };
+
+    let _ =
+        db::user_repository::update_balance(&db, user.id, user_balance).await;
+
+    let _ = categories_repository
+        .update_balance(category.id, category_balance)
+        .await;
+
+    HttpResponse::Ok().json(json!({
+        "status": "success",
+        "message": "Transaction deleted successfully.",
+        "transaction_deleted": transaction
+    }))
 }

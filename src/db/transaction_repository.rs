@@ -68,4 +68,11 @@ impl TransactionRepository {
         .await
         .unwrap();
     }
+
+    pub async fn delete(&self, id: u64) {
+        sqlx::query!("DELETE FROM transactions  WHERE id = ?", id)
+            .execute(&self.db)
+            .await
+            .unwrap();
+    }
 }
