@@ -56,13 +56,21 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::scope("/api")
                     .wrap(from_fn(middleware::auth::verify_jwt))
+                    // Profile Routes
                     .service(controllers::own_profile::get_own_profile)
                     .service(controllers::own_profile::update_profile)
+                    // Catefories Routes
                     .service(controllers::categories::index)
                     .service(controllers::categories::show)
                     .service(controllers::categories::update)
                     .service(controllers::categories::create)
-                    .service(controllers::categories::destroy),
+                    .service(controllers::categories::destroy)
+                    // Transactions Routes
+                    .service(controllers::transactions::index)
+                    .service(controllers::transactions::show)
+                    .service(controllers::transactions::update)
+                    .service(controllers::transactions::create)
+                    .service(controllers::transactions::destroy),
             )
     })
     .bind(("127.0.0.1", 8080))?
