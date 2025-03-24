@@ -8,10 +8,14 @@ use actix_web::{
     put,
     web,
 };
+use serde_json::json;
 
 use crate::{
     AppState,
-    db::transaction_repository,
+    db::transaction_repository::{
+        self,
+        TransactionRepository,
+    },
     domain::transaction::Transaction,
     utils,
 };
@@ -34,8 +38,33 @@ pub async fn index(
 }
 
 #[get("/transactions/{id}")]
-pub async fn show() -> impl Responder {
-    "Transactions: Show"
+pub async fn show(
+    state: web::Data<AppState>,
+    id: web::Path<u64>,
+    req: HttpRequest,
+) -> impl Responder {
+    let user_id = utils::user_helpers::get_user_id(&req);
+    let db = state.db.lock().await;
+
+    let transaction_repo = TransactionRepository::new(db.clone());
+    let Some(transaction) = transaction_repo.get(id.into_inner()).await else {
+        return HttpResponse::NotFound().json(json!(
+        {
+            "status": "error",
+            "message": "Not found"
+        }
+        ));
+    };
+
+    if transaction.user_id != user_id {
+        return HttpResponse::Unauthorized().json(json!(
+        {
+            "status": "error",
+            "message": "Unauthorized"
+        }));
+    }
+
+    HttpResponse::Ok().json(transaction)
 }
 
 #[post("/transactions")]

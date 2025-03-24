@@ -19,4 +19,15 @@ impl TransactionRepository {
         .await
         .unwrap()
     }
+
+    pub async fn get(&self, id: u64) -> Option<Transaction> {
+        sqlx::query_as!(
+            Transaction,
+            "SELECT * FROM transactions WHERE id = ?",
+            id
+        )
+        .fetch_one(&self.db)
+        .await
+        .ok()
+    }
 }
