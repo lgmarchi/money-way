@@ -1,13 +1,14 @@
 [package]
 name = "money-way"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 # Improve compile times when using SQLx
 [profile.dev.package.sqlx-macros]
 opt-level = 3
 
 [dependencies]
+actix-extensible-rate-limit = "0.4.0"
 actix-web = "4.10.2"
 bcrypt = "0.17.0"
 chrono = { version = "0.4.40", features = ["serde"] }
