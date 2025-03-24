@@ -1,6 +1,7 @@
 use crate::domain::transaction::{
     CreateTransactionRequest,
     Transaction,
+    UpdateTransactionRequest,
 };
 
 pub struct TransactionRepository {
@@ -50,5 +51,21 @@ impl TransactionRepository {
         ).execute(&self.db).await.unwrap();
 
         self.get(query_result.last_insert_id()).await
+    }
+
+    pub async fn update(
+        &self,
+        transaction: &UpdateTransactionRequest,
+        id: u64,
+    ) {
+        sqlx::query!(
+            "UPDATE transactions SET memo = ?, description = ? WHERE id = ?",
+            transaction.memo,
+            transaction.description,
+            id
+        )
+        .execute(&self.db)
+        .await
+        .unwrap();
     }
 }

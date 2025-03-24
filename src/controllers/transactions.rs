@@ -23,6 +23,7 @@ use crate::{
     domain::transaction::{
         CreateTransactionRequest,
         Transaction,
+        UpdateTransactionRequest,
     },
     utils,
 };
@@ -64,7 +65,7 @@ pub async fn show(
     };
 
     if transaction.user_id != user_id {
-        return HttpResponse::Unauthorized().json(json!(
+        return HttpResponse::Forbidden().json(json!(
         {
             "status": "error",
             "message": "Unauthorized"
@@ -140,8 +141,44 @@ pub async fn create(
 }
 
 #[put("/transactions/{id}")]
-pub async fn update() -> impl Responder {
-    "Transactions: Update"
+pub async fn update(
+    state: web::Data<AppState>,
+    id: web::Path<u64>,
+    data: web::Json<UpdateTransactionRequest>,
+    req: HttpRequest,
+) -> impl Responder {
+    let user_id = utils::user_helpers::get_user_id(&req);
+    let db = state.db.lock().await;
+
+    let transaction_repo = TransactionRepository::new(db.clone());
+    let Some(transaction) = transaction_repo.get(id.into_inner()).await else {
+        return HttpResponse::NotFound().json(json!(
+        {
+            "status": "error",
+            "message": "Not found"
+        }
+        ));
+    };
+
+    if transaction.user_id != user_id {
+        return HttpResponse::Forbidden().json(json!(
+        {
+            "status": "error",
+            "message": "Unauthorized"
+        }));
+    };
+    transaction_repo.update(&data, transaction.id).await;
+
+    let transaction_option = transaction_repo.get(transaction.id).await;
+
+    match transaction_option {
+        Some(transaction) => HttpResponse::Ok().json(transaction),
+        None => HttpResponse::BadRequest().json(json!(
+        {
+            "status": "error",
+            "message": "Transaction not updated"
+        })),
+    }
 }
 
 #[delete("/transactions/{id}")]
