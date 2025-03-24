@@ -61,3 +61,15 @@ pub async fn update_by_id(
 
     Ok(())
 }
+
+pub async fn update_balance(
+    db: &sqlx::MySqlPool,
+    id: u64,
+    balance: u64,
+) -> sqlx::Result<()> {
+    sqlx::query!("UPDATE users SET balance = ? WHERE id = ?", balance, id)
+        .execute(db)
+        .await?;
+
+    Ok(())
+}
