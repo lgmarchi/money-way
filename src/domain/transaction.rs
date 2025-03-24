@@ -19,3 +19,12 @@ pub struct Transaction {
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
+
+#[derive(Deserialize, Debug)]
+pub struct CreateTransactionRequest {
+    pub category_id: u64,
+    pub r#type: String,
+    pub amount: u64,
+    pub memo: String,
+    pub description: Option<String>,
+}

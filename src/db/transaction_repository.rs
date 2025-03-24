@@ -1,4 +1,7 @@
-use crate::domain::transaction::Transaction;
+use crate::domain::transaction::{
+    CreateTransactionRequest,
+    Transaction,
+};
 
 pub struct TransactionRepository {
     db: sqlx::MySqlPool,
@@ -29,5 +32,23 @@ impl TransactionRepository {
         .fetch_one(&self.db)
         .await
         .ok()
+    }
+
+    pub async fn create(
+        &self,
+        data: &CreateTransactionRequest,
+        user_id: u64,
+    ) -> Option<Transaction> {
+        let query_result = sqlx::query!(
+            "INSERT INTO transactions (user_id, category_id, type, amount, memo, description) VALUES (?, ?, ?, ?, ?, ?)",
+            user_id,
+            data.category_id,
+            data.r#type,
+            data.amount,
+            data.memo,
+            data.description,
+        ).execute(&self.db).await.unwrap();
+
+        self.get(query_result.last_insert_id()).await
     }
 }
