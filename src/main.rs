@@ -65,6 +65,7 @@ async fn main() -> std::io::Result<()> {
                     .service(controllers::categories::update)
                     .service(controllers::categories::create)
                     .service(controllers::categories::destroy)
+                    .service(controllers::categories::get_transactions)
                     // Transactions Routes
                     .service(controllers::transactions::index)
                     .service(controllers::transactions::show)

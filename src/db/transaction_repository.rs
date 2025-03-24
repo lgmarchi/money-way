@@ -24,6 +24,20 @@ impl TransactionRepository {
         .unwrap()
     }
 
+    pub async fn get_all_of_category(
+        &self,
+        category_id: u64,
+    ) -> Vec<Transaction> {
+        sqlx::query_as!(
+            Transaction,
+            "SELECT * FROM transactions WHERE category_id = ?",
+            category_id
+        )
+        .fetch_all(&self.db)
+        .await
+        .unwrap()
+    }
+
     pub async fn get(&self, id: u64) -> Option<Transaction> {
         sqlx::query_as!(
             Transaction,

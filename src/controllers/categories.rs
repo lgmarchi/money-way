@@ -12,7 +12,10 @@ use serde_json::json;
 
 use crate::{
     AppState,
-    db::category_repository::CategoryRepository,
+    db::{
+        category_repository::CategoryRepository,
+        transaction_repository::TransactionRepository,
+    },
     domain::category::{
         CreateCategoryRequest,
         UpdateCategoryRequest,
@@ -148,4 +151,39 @@ pub async fn destroy(
         "message": "Category deleted successfully.",
         "category_deleted": category
     }))
+}
+
+#[get("/categories/{id}/transactions")]
+pub async fn get_transactions(
+    state: web::Data<AppState>,
+    id: web::Path<u64>,
+    req: HttpRequest,
+) -> impl Responder {
+    let user_id = utils::user_helpers::get_user_id(&req);
+    let db = state.db.lock().await;
+
+    let categories_repository = CategoryRepository::new(db.clone());
+    let Some(category) = categories_repository.get(id.into_inner()).await
+    else {
+        return HttpResponse::NotFound().json(json!(
+        {
+            "status": "error",
+            "message": "Not found"
+        }
+        ));
+    };
+
+    if category.user_id != user_id {
+        return HttpResponse::Unauthorized().json(json!(
+        {
+            "status": "error",
+            "message": "Unauthorized"
+        }));
+    };
+
+    let transaction_repo = TransactionRepository::new(db.clone());
+    let transactions_in_category =
+        transaction_repo.get_all_of_category(category.id).await;
+
+    HttpResponse::Ok().json(transactions_in_category)
 }
