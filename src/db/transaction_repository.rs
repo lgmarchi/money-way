@@ -58,7 +58,7 @@ impl TransactionRepository {
             "INSERT INTO transactions (user_id, category_id, type, amount, memo, description) VALUES (?, ?, ?, ?, ?, ?)",
             user_id,
             data.category_id,
-            data.r#type,
+            data.r#type.to_string(),
             data.amount,
             data.memo,
             data.description,

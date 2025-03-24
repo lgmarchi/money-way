@@ -103,7 +103,7 @@ pub async fn create(
         }));
     }
 
-    if data.r#type == "DEBIT"
+    if data.r#type.is_credit()
         && (user.balance < data.amount || category.balance < data.amount)
     {
         return HttpResponse::BadRequest().json(json!(
@@ -117,7 +117,7 @@ pub async fn create(
     let transaction_repo = TransactionRepository::new(db.clone());
     let transaction_option = transaction_repo.create(&data, user.id).await;
 
-    let (user_balance, category_balance) = if data.r#type == "DEBIT" {
+    let (user_balance, category_balance) = if data.r#type.is_debit() {
         (user.balance - data.amount, category.balance - data.amount)
     } else {
         (user.balance + data.amount, category.balance + data.amount)
@@ -213,7 +213,7 @@ pub async fn destroy(
     let category =
         categories_repository.get(transaction.category_id).await.unwrap();
 
-    if transaction.r#type == "CREDIT"
+    if transaction.r#type.is_credit()
         && (transaction.amount > user.balance
             || transaction.amount > category.balance)
     {
@@ -227,7 +227,7 @@ pub async fn destroy(
 
     transaction_repo.delete(transaction.id).await;
 
-    let (user_balance, category_balance) = if transaction.r#type == "CREDIT" {
+    let (user_balance, category_balance) = if transaction.r#type.is_credit() {
         (
             user.balance - transaction.amount,
             category.balance - transaction.amount,
