@@ -26,13 +26,10 @@ pub struct SignInRequest {
 #[derive(Serialize, Debug)]
 pub struct User {
     pub id: u64,
-    #[serde(trim_whitespace)]
     pub email: String,
     #[serde(skip_serializing)]
     pub password: String,
-    #[serde(trim_whitespace)]
     pub first_name: String,
-    #[serde(trim_whitespace)]
     pub last_name: String,
     #[serde(default)]
     pub balance: u64,

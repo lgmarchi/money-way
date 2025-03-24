@@ -21,6 +21,5 @@ sqlx = { version = "0.8", features = [
     "tls-native-tls",
     "mysql",
     "chrono",
-    "trim",
 ] }
 tokio = { version = "1.44.1", features = ["full"] }
